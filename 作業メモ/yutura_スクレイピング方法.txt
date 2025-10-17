@@ -1,0 +1,26 @@
+PS C:\Users\Owner\youtube> python scripts\scrape_yutura_pages_selenium.py --start 1 --end 5 --out data\yutura_news_pages_1-5.csv --headless --save-html-dir data\yutura_pages_html
+
+概要（実行に必要なもの）
+スクリプト: scrape_yutura_pages_selenium.py
+PowerShell ラッパー: run_scrape_yutura.ps1
+依存ファイル: requirements-scrape.txt
+README: README_SCRAPE_YUTURA.md
+出力例: yutura_news_pages_1-5.csv, ページごとの HTML は yutura_pages_html に保存
+
+実行（推奨：PowerShell ラッパーを使う）
+リポジトリルート（youtube）から実行します。
+
+例：ページ 1 〜 5 をヘッドレスで取得し、HTML を保存する:
+# conda を使うなら先に activate しておく
+conda activate faceenv; .\scripts\run_scrape_yutura.ps1 -Start 1 -End 5 -Out "data\yutura_news_pages_1-5.csv" -SaveHtmlDir "data\yutura_pages_html" -Headless
+
+日付つき
+python scripts\scrape_yutura_pages_selenium.py --start 1 --end 5 --headless --date-stamp
+
+出力:
+
+統合 CSV: yutura_news_pages_1-5.csv（列: rank,page,title,url,date,source_page）
+ページ HTML（任意保存）: yutura_page_1.html など
+
+語彙抽出
+python scripts\extract_yutura_vocab.py --in data\yutura_news_pages_20251010_1-5.csv

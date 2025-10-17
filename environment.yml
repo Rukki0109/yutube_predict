@@ -1,0 +1,19 @@
+name: faceenv
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - numpy
+  - pandas
+  - scikit-learn
+  - xgboost
+  - joblib
+  - pillow
+  - selenium
+  - beautifulsoup4
+  - requests
+  - pip:
+    - webdriver-manager
+    - janome

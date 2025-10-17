@@ -1,0 +1,14 @@
+numpy
+pandas
+scikit-learn
+xgboost
+joblib
+Pillow
+selenium
+beautifulsoup4
+requests
+webdriver-manager
+janome
+janome
+scikit-learn
+pandas
