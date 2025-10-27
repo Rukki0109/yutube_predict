@@ -1,12 +1,18 @@
-# Byte-compiled / optimized / DLL files
+# ----------------------------------------
+# Python bytecode / compiled files
+# ----------------------------------------
 __pycache__/
 *.py[cod]
 *$py.class
 
+# ----------------------------------------
 # C extensions
+# ----------------------------------------
 *.so
 
+# ----------------------------------------
 # Distribution / packaging
+# ----------------------------------------
 .Python
 build/
 develop-eggs/
@@ -22,11 +28,15 @@ var/
 *.egg-info/
 *.egg
 
+# ----------------------------------------
 # Installer logs
+# ----------------------------------------
 pip-log.txt
 pip-delete-this-directory.txt
 
+# ----------------------------------------
 # Unit test / coverage reports
+# ----------------------------------------
 .tox/
 .nox/
 .coverage
@@ -39,27 +49,55 @@ coverage.xml
 hypothesis/
 .pytest_cache/
 
+# ----------------------------------------
 # Jupyter Notebook
-.ipynb_checkpoints
+# ----------------------------------------
+*.ipynb
+.ipynb_checkpoints/
 
-# pyenv
+# ----------------------------------------
+# Python environment managers
+# ----------------------------------------
 .python-version
+.env
 
-# VSCode
+# ----------------------------------------
+# IDE / Editor settings
+# ----------------------------------------
 .vscode/
+.idea/
 
+# ----------------------------------------
 # OS files
+# ----------------------------------------
 Thumbs.db
 .DS_Store
 
-# Data and models (do not commit heavy files)
+# ----------------------------------------
+# Data and model files (large or sensitive)
+# ----------------------------------------
 data/
 trend_data/
+datasets/
+outputs/
+*.csv
+*.xlsx
+*.xls
+*.ods
 *.pkl
 *.joblib
 *.h5
 *.ckpt
-.env
+*.npy
+*.sav
 
-# Selenium cache / html saves
+# ----------------------------------------
+# Selenium cache / temporary HTML
+# ----------------------------------------
 data/yutura_pages_html*/
+
+# ----------------------------------------
+# Logs / temp files
+# ----------------------------------------
+*.log
+*.tmp
