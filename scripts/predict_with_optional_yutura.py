@@ -65,25 +65,40 @@ def prepare_feature_row(row, vectorizer):
     desc = str(row.get('description','') if pd.notna(row.get('description','')) else '')
     cat = int(row.get('categoryId') if pd.notna(row.get('categoryId')) else -1)
     thumb = row.get('thumbnail','')
-
+    # TF-IDF part
     tv = vectorizer.transform([title])
     try:
-        # some vectorizers return sparse matrix with toarray()
+        # sparse matrix -> toarray
         tfidf = tv.toarray().flatten()
     except Exception:
-        # assume it's a numpy array
         import numpy as _np
         arr = _np.asarray(tv)
         if arr.ndim == 2:
             tfidf = arr.flatten()
         else:
             tfidf = arr
+
     brightness = extract_thumbnail_brightness(thumb)
     title_len = len(title)
     desc_len = len(desc)
     has_shorts = 1 if 'shorts' in title.lower() else 0
 
-    feat = np.concatenate([[cat],[brightness,title_len,desc_len,has_shorts], tfidf])
+    # extra features used during training: trend_score and interest_score
+    trend_keywords = ["shorts", "tiktok", "破産", "共感性羞恥", "炎上"]
+    trend_score = sum(1 for kw in trend_keywords if kw in (title + ' ' + desc))
+
+    # load comment keywords file if available
+    interest_score = 0
+    try:
+        with open('comment_keywords.txt', encoding='utf-8') as f:
+            interest_keywords = [line.strip() for line in f if line.strip()]
+        interest_score = sum(1 for kw in interest_keywords if kw in (title + ' ' + desc))
+    except Exception:
+        interest_score = 0
+
+    # order must match training: [categoryId, thumbnail_brightness, title_length, description_length, has_shorts, trend_score, interest_score, tfidf...]
+    num_feats = np.array([cat, brightness, title_len, desc_len, has_shorts, trend_score, interest_score], dtype=float)
+    feat = np.concatenate([num_feats, np.asarray(tfidf, dtype=float)])
     return feat
 
 
@@ -108,7 +123,8 @@ def main():
             else:
                 # left join
                 df = df.merge(df_yu, how='left', on='videoId')
-                print(f'Merged yutura features; added cols: {set(df_yu.columns) - {"videoId","snapshot_date"}}')
+                added = [c for c in df_yu.columns if c not in ('videoId', 'snapshot_date')]
+                print(f'Merged yutura features; added cols: {added}')
         else:
             print('Provided yutura features file not found, continuing without them')
 

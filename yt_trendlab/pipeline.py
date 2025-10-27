@@ -5,7 +5,6 @@ import pandas as pd
 import numpy as np
 from isodate import parse_duration
 from .thumbnail_features import ensure_thumbnail_features, THUMBNAIL_COLS
-from .trending_utils import ensure_trending_snapshot_if_missing, add_trend_features
 from .text_features import build_vectorizer
 from .modeling import train_rf, evaluate_rmse, feature_importance_df
 
@@ -39,11 +38,8 @@ def run_all(xlsx_path: str, cutoff="2025-07-01", tfidf_max_features=300, verbose
     df["is_month_start"] = df["publishedAt"].dt.is_month_start.astype(int)
     df["is_month_end"] = df["publishedAt"].dt.is_month_end.astype(int)
 
-    # 4) trending (CSVなければここで取得)
-    log("Ensuring trending snapshot (if missing) & building trend features...")
-    ensure_trending_snapshot_if_missing()
-    trend_df = add_trend_features(df["title"])
-    df = pd.concat([df.reset_index(drop=True), trend_df.reset_index(drop=True)], axis=1)
+    # 4) trending features: removed for single-script parity (we don't add external trend features here)
+    log("Skipping external trend feature enrichment (using local features only)")
 
     # 5) TF-IDF
     log("Vectorizing titles (TF-IDF)...")
@@ -60,13 +56,15 @@ def run_all(xlsx_path: str, cutoff="2025-07-01", tfidf_max_features=300, verbose
 
     # 6) assemble features
     log("Assembling feature matrices...")
-    base_cols = ["categoryId","weekday","hour","is_weekend","is_month_start","is_month_end"]
-    trend_cols = ["trend_overlap_count","trend_overlap_ratio","trend_cosine_sim"]
-    X_train = pd.concat([df_train[base_cols], df_train[[c for c in THUMBNAIL_COLS]], tfidf_df_tr], axis=1)
-    X_test  = pd.concat([df_test[base_cols],  df_test[[c for c in THUMBNAIL_COLS]],  tfidf_df_te], axis=1)
-    # trendは最後に concat（列順を固定しておく）
-    X_train = pd.concat([X_train, df_train[trend_cols]], axis=1).reset_index(drop=True)
-    X_test  = pd.concat([X_test,  df_test[trend_cols]],  axis=1).reset_index(drop=True)
+    # restore days_since_posted and use the same base columns as the standalone script
+    df["days_since_posted"] = (pd.Timestamp.now(tz="UTC") - df["publishedAt"]).dt.days
+    # recompute train/test slices (to ensure days_since_posted present in both)
+    df_train = df[df["publishedAt"] < cutoff_ts].copy()
+    df_test  = df[df["publishedAt"] >= cutoff_ts].copy()
+
+    base_cols = ["categoryId","weekday","hour","is_weekend","is_month_start","is_month_end","days_since_posted"]
+    X_train = pd.concat([df_train[base_cols].reset_index(drop=True), df_train[[c for c in THUMBNAIL_COLS]].reset_index(drop=True), tfidf_df_tr.reset_index(drop=True)], axis=1)
+    X_test  = pd.concat([df_test[base_cols].reset_index(drop=True),  df_test[[c for c in THUMBNAIL_COLS]].reset_index(drop=True),  tfidf_df_te.reset_index(drop=True)], axis=1)
 
     y_train = np.log1p(df_train["viewCount"])
     y_test  = df_test["viewCount"]
